@@ -1,0 +1,750 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Library | StudyRAG{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ── Page Layout ─────────────────────────────────────────── */
+.lib-page { max-width: 980px; margin: 0 auto; }
+
+/* ── Hero Header ─────────────────────────────────────────── */
+.lib-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2.25rem;
+    flex-wrap: wrap;
+}
+.lib-hero-left { flex: 1; }
+.lib-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 9999px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #a5b4fc;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.85rem;
+}
+.lib-hero-eyebrow span.dot-live {
+    width: 6px; height: 6px;
+    background: #34d399;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #34d399;
+    animation: livePulse 1.8s ease-in-out infinite;
+}
+@keyframes livePulse {
+    0%,100%{opacity:1;transform:scale(1);}
+    50%{opacity:0.5;transform:scale(1.6);}
+}
+.lib-hero h1 {
+    font-family: var(--font-heading);
+    font-size: 2.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #f1f5f9 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.lib-hero p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    max-width: 460px;
+    line-height: 1.6;
+}
+
+/* ── Stat Strip ──────────────────────────────────────────── */
+.stat-strip {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+.stat-tile {
+    flex: 1;
+    min-width: 130px;
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-card);
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    transition: var(--transition);
+    animation: fadeInSlide 0.4s ease both;
+}
+.stat-tile:hover { transform: translateY(-2px); border-color: rgba(99,102,241,0.3); }
+.stat-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.stat-val {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+.stat-lbl {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.2rem;
+}
+
+/* ── Upload Card ─────────────────────────────────────────── */
+.upload-card {
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-card);
+    animation: fadeInSlide 0.4s ease both;
+}
+.upload-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* Dropzone */
+#dropzone {
+    border: 2px dashed rgba(99,102,241,0.35);
+    border-radius: var(--radius-md);
+    padding: 2.75rem 1.5rem;
+    text-align: center;
+    background: rgba(31,41,61,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+#dropzone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(99,102,241,0.08) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#dropzone.dragover, #dropzone:hover {
+    border-color: #6366f1;
+    background: rgba(99,102,241,0.08);
+}
+#dropzone.dragover::before, #dropzone:hover::before { opacity: 1; }
+
+.dz-icon-ring {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.12);
+    border: 2px solid rgba(99,102,241,0.25);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem auto;
+    transition: var(--transition);
+}
+#dropzone:hover .dz-icon-ring { background: rgba(99,102,241,0.2); transform: scale(1.08); }
+#file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
+
+.dz-title { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; }
+.dz-subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem; }
+.dz-formats { display: inline-flex; gap: 0.5rem; }
+.dz-badge {
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.25);
+    color: #a5b4fc;
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+/* File preview pill */
+#selected-file-preview {
+    display: none;
+    padding: 0.5rem 0;
+}
+.file-preview-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1.25rem;
+    animation: fadeInSlide 0.25s ease both;
+}
+.file-icon-box {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: rgba(16,185,129,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.72rem; color: #34d399;
+    border: 1px solid rgba(16,185,129,0.25);
+}
+.file-remove-btn {
+    background: none; border: none;
+    color: var(--text-muted); cursor: pointer;
+    font-size: 1.1rem; line-height: 1;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    transition: var(--transition);
+    margin-left: auto;
+}
+.file-remove-btn:hover { color: #f87171; background: rgba(239,68,68,0.1); }
+
+/* Progress bar */
+#upload-progress-wrap {
+    display: none;
+    margin-top: 1.25rem;
+}
+.progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.78rem; color: var(--text-muted);
+    margin-bottom: 0.45rem;
+}
+.progress-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent-gradient);
+    border-radius: 9999px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 12px rgba(99,102,241,0.5);
+}
+@keyframes progressIndeterminate {
+    0%{width:0%;left:0%;}50%{width:60%;left:20%;}100%{width:0%;left:100%;}
+}
+.progress-bar-fill.indeterminate {
+    position: relative;
+    width: 40% !important;
+    animation: progressIndeterminate 1.5s linear infinite;
+}
+
+/* Upload footer */
+.upload-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.upload-hint {
+    display: flex; align-items: center; gap: 0.45rem;
+    color: var(--text-muted); font-size: 0.8rem;
+}
+
+/* ── Documents Grid ───────────────────────────────────────── */
+.docs-section {
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-card);
+    animation: fadeInSlide 0.5s ease both;
+}
+.docs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.docs-title { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+.docs-count { color: var(--text-muted); font-size: 0.82rem; margin-top: 0.2rem; }
+
+/* Search box */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.search-box svg {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+#doc-search-input {
+    width: 240px;
+    padding: 0.5rem 0.85rem 0.5rem 2.25rem;
+    font-size: 0.85rem;
+    background: var(--bg-input);
+    border: 1px solid var(--bg-input-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    outline: none;
+    transition: var(--transition);
+}
+#doc-search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+
+/* Document card */
+.doc-card {
+    background: rgba(31,41,61,0.45);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    transition: var(--transition);
+    cursor: default;
+    animation: fadeInSlide 0.35s ease both;
+    position: relative;
+    overflow: hidden;
+}
+.doc-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent-gradient);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.doc-card:hover {
+    border-color: rgba(99,102,241,0.35);
+    transform: translateX(4px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.doc-card:hover::before { opacity: 1; }
+
+.doc-file-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.78rem;
+    flex-shrink: 0;
+}
+.doc-info { flex: 1; min-width: 0; }
+.doc-title {
+    font-family: var(--font-heading);
+    font-size: 1rem; font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 480px;
+}
+.doc-meta {
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+    font-size: 0.78rem; color: var(--text-muted);
+    align-items: center;
+}
+.doc-meta-chip {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: rgba(255,255,255,0.04);
+    border-radius: 9999px;
+    padding: 0.18rem 0.55rem;
+    border: 1px solid rgba(255,255,255,0.07);
+}
+.doc-actions { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+.btn-chat {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    background: var(--accent-gradient);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.5rem 1.1rem;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+}
+.btn-chat:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.45); filter: brightness(1.08); }
+.btn-del {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius-sm);
+    color: #ef4444;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-del:hover { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); transform: scale(1.08); }
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: var(--radius-md);
+    background: rgba(31,41,61,0.2);
+}
+.empty-icon {
+    width: 60px; height: 60px;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem auto;
+}
+.empty-title { font-family: var(--font-heading); font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.4rem; }
+.empty-sub { color: var(--text-muted); font-size: 0.88rem; max-width: 380px; margin: 0 auto; }
+
+/* Doc list gap */
+#document-list { display: flex; flex-direction: column; gap: 0.85rem; }
+
+/* No-results */
+#no-results-msg {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lib-page">
+
+    <!-- ── Hero ── -->
+    <div class="lib-hero">
+        <div class="lib-hero-left">
+            <div class="lib-hero-eyebrow">
+                <span class="dot-live"></span>
+                AI Knowledge Base · RAG Indexer
+            </div>
+            <h1>Document Library</h1>
+            <p>Upload course materials, textbooks, and lecture notes. StudyRAG auto-indexes them for instant AI-powered questioning.</p>
+        </div>
+        <a href="{% url 'home' %}" class="btn btn-secondary" style="align-self: flex-start;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Dashboard
+        </a>
+    </div>
+
+    <!-- ── Stat Strip ── -->
+    <div class="stat-strip">
+        <div class="stat-tile" style="animation-delay:0s">
+            <div class="stat-icon" style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.25);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            </div>
+            <div>
+                <div class="stat-val">{{ documents.count }}</div>
+                <div class="stat-lbl">Documents</div>
+            </div>
+        </div>
+        <div class="stat-tile" style="animation-delay:0.07s">
+            <div class="stat-icon" style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.25);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            </div>
+            <div>
+                <div class="stat-val">{{ total_chunks|default:"—" }}</div>
+                <div class="stat-lbl">Total Chunks</div>
+            </div>
+        </div>
+        <div class="stat-tile" style="animation-delay:0.14s">
+            <div class="stat-icon" style="background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.25);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <div>
+                <div class="stat-val">{{ total_messages|default:"—" }}</div>
+                <div class="stat-lbl">Questions Asked</div>
+            </div>
+        </div>
+        <div class="stat-tile" style="animation-delay:0.21s">
+            <div class="stat-icon" style="background:rgba(139,92,246,0.15); border:1px solid rgba(139,92,246,0.25);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div>
+                <div class="stat-val">RAG</div>
+                <div class="stat-lbl">Engine Active</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Upload Card ── -->
+    <div class="upload-card">
+        <div class="upload-card-title">
+            <div style="width:28px;height:28px;border-radius:8px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            </div>
+            Upload New Document
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+            {% csrf_token %}
+
+            <div id="dropzone">
+                <input type="file" id="file-input" name="file" accept=".pdf,.docx" required>
+                
+                <div id="dropzone-content">
+                    <div class="dz-icon-ring">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <div class="dz-title">Drop your document here</div>
+                    <div class="dz-subtitle">or click anywhere to browse — max 10 MB</div>
+                    <div class="dz-formats">
+                        <span class="dz-badge">PDF</span>
+                        <span class="dz-badge">DOCX</span>
+                    </div>
+                </div>
+
+                <div id="selected-file-preview">
+                    <div class="file-preview-pill" id="file-preview-pill">
+                        <div class="file-icon-box" id="file-type-badge">PDF</div>
+                        <div style="text-align:left;">
+                            <div id="selected-file-name" style="font-weight:600;color:var(--text-primary);font-size:0.92rem;"></div>
+                            <div id="selected-file-size" style="font-size:0.78rem;color:var(--text-muted);"></div>
+                        </div>
+                        <button type="button" class="file-remove-btn" id="remove-file-btn" title="Remove file">✕</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Progress -->
+            <div id="upload-progress-wrap">
+                <div class="progress-label">
+                    <span id="progress-label-text">Indexing document...</span>
+                    <span id="progress-pct">—</span>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill indeterminate" id="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="upload-footer">
+                <div class="upload-hint">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    Auto-extracts text, chunks into knowledge segments, and builds RAG index.
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn-submit-upload" style="min-width:160px;" disabled>
+                    <span id="btn-text" style="display:inline-flex;align-items:center;gap:0.5rem;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        Upload & Index
+                    </span>
+                    <span id="btn-spinner" style="display:none;align-items:center;gap:0.5rem;">
+                        <svg style="animation:spin 1s linear infinite;width:15px;height:15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path><circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle></svg>
+                        Indexing...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Documents Section ── -->
+    <div class="docs-section">
+        <div class="docs-header">
+            <div>
+                <div class="docs-title">My Indexed Documents</div>
+                <div class="docs-count">
+                    {% if documents %}
+                        {{ documents.count }} document{{ documents.count|pluralize }} available for AI questioning
+                    {% else %}
+                        No documents yet — upload one above to get started
+                    {% endif %}
+                </div>
+            </div>
+            {% if documents %}
+            <div class="search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="doc-search-input" placeholder="Filter documents..." autocomplete="off">
+            </div>
+            {% endif %}
+        </div>
+
+        {% if documents %}
+        <div id="document-list">
+            {% for document in documents %}
+            <div class="doc-card" data-title="{{ document.title|lower }}" style="animation-delay:{{ forloop.counter0 }}00ms">
+                <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0;">
+                    <div class="doc-file-icon" style="{% if document.file_extension == 'PDF' %}color:#f87171;{% else %}color:#60a5fa;{% endif %}">
+                        {{ document.file_extension }}
+                    </div>
+                    <div class="doc-info">
+                        <div class="doc-title">{{ document.title }}</div>
+                        <div class="doc-meta">
+                            <span class="doc-meta-chip">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                {{ document.uploaded_at|date:"M d, Y" }}
+                            </span>
+                            <span class="doc-meta-chip">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path></svg>
+                                {{ document.file_size_formatted|default:"—" }}
+                            </span>
+                            <span class="doc-meta-chip" style="background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.2);color:#a5b4fc;">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                                {{ document.chunk_count }} chunks
+                            </span>
+                            {% if document.message_count > 0 %}
+                            <span class="doc-meta-chip" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:#34d399;">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                                {{ document.message_count }} Q{{ document.message_count|pluralize }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="doc-actions">
+                    <a href="{% url 'document_chat' document.id %}" class="btn-chat">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        Chat
+                    </a>
+                    <form method="POST" action="{% url 'document_delete' document.id %}" onsubmit="return confirmDelete('{{ document.title|escapejs }}')" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-del" title="Delete document">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="no-results-msg">No documents match your search.</div>
+
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            </div>
+            <div class="empty-title">No Documents Indexed Yet</div>
+            <div class="empty-sub">Upload your first PDF or DOCX above. StudyRAG will extract, chunk, and index it for AI-powered retrieval in seconds.</div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<style>
+@keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const dzContent = document.getElementById('dropzone-content');
+    const preview = document.getElementById('selected-file-preview');
+    const fileNameEl = document.getElementById('selected-file-name');
+    const fileSizeEl = document.getElementById('selected-file-size');
+    const fileTypeBadge = document.getElementById('file-type-badge');
+    const removeBtn = document.getElementById('remove-file-btn');
+    const uploadForm = document.getElementById('upload-form');
+    const btnSubmit = document.getElementById('btn-submit-upload');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    const progressWrap = document.getElementById('upload-progress-wrap');
+    const searchInput = document.getElementById('doc-search-input');
+
+    // ── Drag & Drop ──────────────────────────────
+    ['dragenter','dragover'].forEach(ev => {
+        dropzone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dropzone.classList.add('dragover'); });
+    });
+    ['dragleave','drop'].forEach(ev => {
+        dropzone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('dragover'); });
+    });
+    dropzone.addEventListener('drop', e => {
+        const file = e.dataTransfer.files[0];
+        if (file) setFile(file);
+    });
+
+    // ── File Input Change ─────────────────────────
+    fileInput.addEventListener('change', function () {
+        if (this.files && this.files[0]) setFile(this.files[0]);
+    });
+
+    function setFile(file) {
+        const ext = file.name.split('.').pop().toUpperCase();
+        const allowedExts = ['PDF','DOCX'];
+        if (!allowedExts.includes(ext)) {
+            alert('Only PDF and DOCX files are supported.');
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be under 10 MB.');
+            return;
+        }
+
+        dzContent.style.display = 'none';
+        preview.style.display = 'block';
+        fileNameEl.textContent = file.name;
+        fileTypeBadge.textContent = ext;
+
+        const sizeMB = file.size / (1024 * 1024);
+        fileSizeEl.textContent = sizeMB < 1
+            ? (file.size / 1024).toFixed(1) + ' KB'
+            : sizeMB.toFixed(2) + ' MB';
+
+        btnSubmit.disabled = false;
+    }
+
+    // ── Remove File ───────────────────────────────
+    removeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        fileInput.value = '';
+        preview.style.display = 'none';
+        dzContent.style.display = 'block';
+        btnSubmit.disabled = true;
+    });
+
+    // ── Upload Submit ─────────────────────────────
+    uploadForm.addEventListener('submit', function () {
+        btnSubmit.disabled = true;
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'inline-flex';
+        progressWrap.style.display = 'block';
+    });
+
+    // ── Document Search ───────────────────────────
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const q = this.value.trim().toLowerCase();
+            const cards = document.querySelectorAll('.doc-card');
+            const noResults = document.getElementById('no-results-msg');
+            let visible = 0;
+            cards.forEach(card => {
+                const t = (card.getAttribute('data-title') || '');
+                const show = t.includes(q);
+                card.style.display = show ? 'flex' : 'none';
+                if (show) visible++;
+            });
+            if (noResults) noResults.style.display = (visible === 0 && q) ? 'block' : 'none';
+        });
+    }
+});
+
+function confirmDelete(title) {
+    return confirm(`Delete "${title}"?\n\nThis will permanently remove the document, all knowledge chunks, and chat history.`);
+}
+</script>
+{% endblock %}

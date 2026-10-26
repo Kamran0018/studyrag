@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | StudyRAG{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <!-- Welcome Header Card -->
+    <div style="background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: var(--radius-lg); padding: 2.25rem; margin-bottom: 2rem; backdrop-filter: blur(12px); box-shadow: var(--shadow-card);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <span class="badge-tag" style="margin-bottom: 0.5rem;">Study Workspace</span>
+                <h1 style="font-family: var(--font-heading); font-size: 2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem;">
+                    Welcome back, {{ user.first_name|default:user.username }}!
+                </h1>
+                <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                    Your AI-assisted study workspace is ready. Query documents, review notes, and accelerate your learning.
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary" id="btn-home-logout">
+                        Sign Out
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: var(--radius-md); padding: 1.75rem; box-shadow: var(--shadow-card);">
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 500;">AI Chat Assistant</div>
+            <h3 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 0.75rem;">Study RAG Chat</h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                Ask questions over your course materials, PDF notes, and textbook chapters with citation-backed answers.
+            </p>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem;">
+                <span class="badge-tag" style="margin: 0; background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">
+                    Ready
+                </span>
+                <a href="{% url 'document_upload' %}" class="btn btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.82rem;">
+                    Upload Notes &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: var(--radius-md); padding: 1.75rem; box-shadow: var(--shadow-card);">
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 500;">Account Info</div>
+            <h3 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 0.75rem;">User Profile</h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.5rem;">
+                <strong style="color: var(--text-secondary);">Username:</strong> {{ user.username }}
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.5rem;">
+                <strong style="color: var(--text-secondary);">Email:</strong> {{ user.email|default:"Not specified" }}
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                <strong style="color: var(--text-secondary);">Joined:</strong> {{ user.date_joined|date:"F Y" }}
+            </p>
+            <span class="badge-tag" style="margin: 0;">Active Scholar</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

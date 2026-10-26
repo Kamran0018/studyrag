@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In | StudyRAG{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card" id="login-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Sign in to access your study materials and AI assistant</p>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error" style="margin-bottom: 1.25rem;">
+                <div>
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:login' %}" novalidate id="login-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}" class="form-label">Username or Email</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="field-error">
+                        {% for error in form.username.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="field-error">
+                        {% for error in form.password.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="btn-login-submit" style="margin-top: 1rem;">
+                Sign In to StudyRAG
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account yet? 
+            <a href="{% url 'accounts:signup' %}" class="auth-link" id="link-to-signup">Create one now</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

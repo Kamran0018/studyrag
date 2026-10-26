@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="StudyRAG - AI-powered retrieval augmented learning assistant">
+    <title>{% block title %}StudyRAG | Intelligent Study Assistant{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="brand-link" id="brand-logo">
+                <div class="brand-badge">S</div>
+                <span>Study<strong style="color: #8b5cf6;">RAG</strong></span>
+            </a>
+
+            <nav>
+                <ul class="nav-links">
+                    {% if user.is_authenticated %}
+                        <li>
+                            <a href="{% url 'document_upload' %}" class="nav-link" id="nav-docs-link">Documents</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'home' %}" class="nav-user-pill" id="nav-profile-link">
+                                <img src="{{ user.avatar_url }}" alt="{{ user.username }}" class="nav-user-avatar">
+                                <span>{{ user.first_name|default:user.username }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <form method="post" action="{% url 'accounts:logout' %}" style="display: inline; margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link" id="nav-logout-btn" style="background: none; border: none; cursor: pointer; font: inherit; padding: 0;">Log Out</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="{% url 'accounts:login' %}" class="nav-link" id="nav-login-btn">Log In</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'accounts:signup' %}" class="btn btn-primary" id="nav-signup-btn" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Sign Up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-wrapper">
+        <!-- Django Flash Messages -->
+        {% if messages %}
+            <div class="alerts-container" id="system-alerts">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }}">
+                        <span>{{ message }}</span>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()" aria-label="Close alert">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 StudyRAG. AI-Powered Retrieval-Augmented Learning Environment.</p>
+    </footer>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

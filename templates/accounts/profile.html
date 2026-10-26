@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile | StudyRAG{% endblock %}
+
+{% block content %}
+<div class="profile-grid">
+    <!-- Left Sidebar / Summary Card -->
+    <aside class="profile-sidebar" id="profile-summary">
+        <img src="{{ user.avatar_url }}" alt="{{ user.display_name }}" class="profile-avatar-large" id="profile-avatar-img">
+        <h2 class="profile-name">{{ user.display_name }}</h2>
+        <p class="profile-handle">@{{ user.username }}</p>
+        <span class="badge-tag">StudyRAG Scholar</span>
+
+        {% if user.learning_goals %}
+            <div style="margin-bottom: 1.25rem; font-size: 0.88rem; color: var(--text-secondary);">
+                <strong style="color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Focus Area:</strong>
+                {{ user.learning_goals }}
+            </div>
+        {% endif %}
+
+        {% if user.bio %}
+            <div style="margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-muted); font-style: italic;">
+                "{{ user.bio }}"
+            </div>
+        {% endif %}
+
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-number">Active</div>
+                <div class="stat-label">Status</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ user.date_joined|date:"M Y" }}</div>
+                <div class="stat-label">Joined</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.75rem; display: flex; flex-direction: column; gap: 0.65rem;">
+            <a href="{% url 'accounts:password_change' %}" class="btn btn-secondary btn-full" id="btn-goto-password-change">
+                Change Password
+            </a>
+            <a href="{% url 'accounts:logout' %}" class="btn btn-danger btn-full" id="btn-profile-logout">
+                Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content: Edit Profile Form -->
+    <section class="profile-content" id="profile-edit-section">
+        <h1 class="card-title">Profile Settings</h1>
+        <p class="card-desc">Update your personal information, profile photo, and study goals</p>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error" style="margin-bottom: 1.25rem;">
+                <div>
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'accounts:profile' %}" novalidate id="profile-edit-form">
+            {% csrf_token %}
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="field-error">
+                            {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="field-error">
+                            {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="field-error">
+                        {% for error in form.email.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.learning_goals.id_for_label }}" class="form-label">Learning Goals & Subjects</label>
+                {{ form.learning_goals }}
+                <p class="form-help">Helps StudyRAG personalize knowledge retrieval and summaries.</p>
+                {% if form.learning_goals.errors %}
+                    <div class="field-error">
+                        {% for error in form.learning_goals.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.bio.id_for_label }}" class="form-label">About Me (Bio)</label>
+                {{ form.bio }}
+                {% if form.bio.errors %}
+                    <div class="field-error">
+                        {% for error in form.bio.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.avatar.id_for_label }}" class="form-label">Profile Avatar</label>
+                {{ form.avatar }}
+                {% if form.avatar.errors %}
+                    <div class="field-error">
+                        {% for error in form.avatar.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-top: 1.75rem; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" id="btn-save-profile">
+                    Save Profile Changes
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}
