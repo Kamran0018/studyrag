@@ -250,3 +250,23 @@ def document_clear_history(request, document_id):
     document.chat_messages.all().delete()
     messages.success(request, "Chat history cleared successfully.")
     return redirect("document_chat", document_id=document.id)
+
+
+@login_required
+def document_chunk_detail(request, document_id, chunk_index):
+    document = get_object_or_404(Document, id=document_id, user=request.user)
+    try:
+        chunk = DocumentChunk.objects.get(document=document, chunk_index=chunk_index)
+        return JsonResponse({
+            "success": True,
+            "page": str(chunk.page),
+            "chunk_index": chunk.chunk_index,
+            "text": chunk.text,
+            "document_title": document.title,
+            "file_url": document.file.url if document.file else "",
+        })
+    except DocumentChunk.DoesNotExist:
+        return JsonResponse({
+            "success": False,
+            "error": f"Chunk #{chunk_index} not found for this document.",
+        }, status=404)

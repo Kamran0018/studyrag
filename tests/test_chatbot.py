@@ -181,3 +181,33 @@ def test_delete_document(client, user_a, sample_document):
     response = client.post(url)
     assert response.status_code == 302
     assert Document.objects.filter(id=sample_document.id).count() == 0
+
+
+@pytest.mark.django_db
+def test_document_chunk_detail(client, user_a, sample_document):
+    client.force_login(user_a)
+    url = reverse(
+        "document_chunk_detail",
+        kwargs={"document_id": sample_document.id, "chunk_index": 0},
+    )
+    response = client.get(url)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert data["chunk_index"] == 0
+    assert "Quantum mechanics" in data["text"]
+    assert data["page"] == "1"
+
+
+@pytest.mark.django_db
+def test_document_chunk_detail_not_found(client, user_a, sample_document):
+    client.force_login(user_a)
+    url = reverse(
+        "document_chunk_detail",
+        kwargs={"document_id": sample_document.id, "chunk_index": 9999},
+    )
+    response = client.get(url)
+    assert response.status_code == 404
+    data = response.json()
+    assert data["success"] is False
+

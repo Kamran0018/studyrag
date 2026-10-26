@@ -36,10 +36,20 @@ def answer_document_question(document, question, language="english"):
             f"Page/Section: {chunk.page}]\n{chunk.text}"
         )
 
+        file_url = ""
+        try:
+            if chunk.document.file:
+                file_url = chunk.document.file.url
+        except Exception:
+            file_url = ""
+
         sources.append({
             "filename": chunk.document.title,
-            "page": chunk.page,
+            "page": str(chunk.page),
             "chunk_index": chunk.chunk_index,
+            "snippet": chunk.text[:350] + ("..." if len(chunk.text) > 350 else ""),
+            "text": chunk.text,
+            "file_url": file_url,
         })
 
     context = "\n\n".join(context_parts)
