@@ -1,6 +1,6 @@
 import json
 import os
-from rag.gemini_service import get_gemini_client
+from rag.gemini_service import generate_gemini_content
 
 
 def generate_document_briefing(document):
@@ -17,7 +17,6 @@ def generate_document_briefing(document):
 
     context = "\n\n".join([f"[{c.chunk_index}] {c.text}" for c in chunks])
 
-    client = get_gemini_client()
     model_name = (os.getenv("GEMINI_CHAT_MODEL") or "").strip() or "gemini-2.5-flash"
 
     prompt = f"""
@@ -45,7 +44,7 @@ DOCUMENT CONTEXT:
 """
 
     try:
-        response = client.models.generate_content(
+        response = generate_gemini_content(
             model=model_name,
             contents=prompt,
             config={

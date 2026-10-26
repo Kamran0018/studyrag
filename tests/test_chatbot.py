@@ -211,3 +211,38 @@ def test_document_chunk_detail_not_found(client, user_a, sample_document):
     data = response.json()
     assert data["success"] is False
 
+
+def test_get_all_api_keys_pool(monkeypatch):
+    from rag.gemini_service import get_all_api_keys
+    monkeypatch.setenv("GOOGLE_API_KEY", "key_alpha,key_beta")
+    monkeypatch.setenv("GOOGLE_API_KEY_3", "key_gamma")
+    keys = get_all_api_keys()
+    assert "key_alpha" in keys
+    assert "key_beta" in keys
+    assert "key_gamma" in keys
+
+
+def test_generate_gemini_content_failover(monkeypatch):
+    from rag.gemini_service import generate_gemini_content
+    from unittest.mock import MagicMock
+
+    monkeypatch.setattr("rag.gemini_service.get_all_api_keys", lambda: ["key1", "key2"])
+
+    attempt_keys = []
+
+    def fake_client(api_key):
+        attempt_keys.append(api_key)
+        mock = MagicMock()
+        if api_key == "key1":
+            raise Exception("429 RESOURCE_EXHAUSTED: quota exceeded")
+        mock.models.generate_content.return_value = MagicMock(text="Success from key2")
+        return mock
+
+    monkeypatch.setattr("rag.gemini_service.genai.Client", fake_client)
+
+    resp = generate_gemini_content(model="gemini-2.5-flash", contents="Test prompt")
+    assert resp.text == "Success from key2"
+    assert "key1" in attempt_keys
+    assert "key2" in attempt_keys
+
+
