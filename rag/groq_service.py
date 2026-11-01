@@ -194,7 +194,7 @@ def generate_answer(question, context, language="english", evidence_strength="St
     """
     language_instruction = """
 ### STRICT LANGUAGE STANDARD:
-- Output MUST be 100% in standard, professional English only.
+- Respond in fluent, clear, executive English only.
 - Under NO circumstances use Hindi, Hinglish, or mixed-language phrasing (e.g. never use "ke", "mein", "aur", "mutabik", "hai", or "(Hinglish)").
 - All headings, sections, explanations, bullet points, and tables must be strictly in fluent English.
 """
