@@ -1,76 +1,35 @@
-# ─── Secrets & Environment ────────────────────────────────
+# Environment & Secrets
 .env
 .env.*
-*.env
 !.env.example
 
-# ─── Python ───────────────────────────────────────────────
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.pyo
 *.pyd
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
-.eggs/
 
-# ─── Virtual Environment ──────────────────────────────────
+# Virtual Environment
 venv/
-env/
 .venv/
-ENV/
-env.bak/
-venv.bak/
+env/
 
-# ─── Django ───────────────────────────────────────────────
-*.log
-local_settings.py
+# Django Database & Logs
 db.sqlite3
 db.sqlite3-journal
+*.log
 
-# Media uploads (user files — not for version control)
+# User Media Uploads
 media/
 
-# Static files collected by collectstatic
+# Static Files
 staticfiles/
-static_root/
 
-# ─── Testing & Coverage ───────────────────────────────────
+# Testing & Coverage
 .pytest_cache/
 .coverage
-coverage.xml
-htmlcov/
-.tox/
-nosetests.xml
-pytest-cache/
 
-# ─── IDEs & Editors ───────────────────────────────────────
+# IDEs & OS
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
-*.swp
-*.swo
-*~
-
-# ─── OS Generated ─────────────────────────────────────────
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
 Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# ─── Jupyter ──────────────────────────────────────────────
-.ipynb_checkpoints/
-
-# ─── Misc ─────────────────────────────────────────────────
-*.bak
-*.tmp
-*.orig
-
