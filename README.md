@@ -2,12 +2,12 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django" />
-  <img src="https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini" />
+  <img src="https://img.shields.io/badge/Groq-Ultra--Fast%20Inference-F55036?style=for-the-badge&logo=groq&logoColor=white" alt="Groq" />
   <img src="https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
 </p>
 
-**StudyRAG** goes beyond standard PDF chatbots. It is designed from the ground up as an **Evidence-Based Academic Research & Study Platform** that pairs retrieval-augmented generation (RAG) with verifiable citations, smart document briefings, and hallucination safeguards.
+**StudyRAG** goes beyond standard PDF chatbots. It is designed from the ground up as an **Evidence-Based Academic Research & Study Platform** that pairs retrieval-augmented generation (RAG) powered by **Groq ultra-fast LPU inference** with verifiable citations, smart document briefings, and hallucination safeguards.
 
 ---
 
@@ -20,7 +20,7 @@
 - **Deep PDF Linking**: One-click **"Open PDF at Page X"** directly jumps to the exact cited page in your browser's PDF viewer.
 
 ### 🧠 2. Smart Document Briefing
-- Instantly synthesizes uploaded documents upon upload:
+- Instantly synthesizes uploaded documents upon upload via Groq JSON mode:
   - **Executive Summary**: High-level overview of key topics.
   - **Core Concepts**: Interactive tag cloud of primary themes.
   - **Key Definitions**: Glossaries and terminology reference.
@@ -28,16 +28,16 @@
 
 ### 🛡️ 3. Evidence Strength Scoring
 - Every AI response calculates an **Evidence Confidence Score (0–100%)**:
-  - 🟢 **Strong Evidence**: High vector similarity across multiple document chunks.
+  - 🟢 **Strong Evidence**: High textual relevance across multiple document chunks.
   - 🟡 **Partial Evidence**: Moderately relevant chunks; flags areas where details may be sparse.
   - 🔴 **Limited / Insufficient**: Out-of-scope or unverified topics explicitly declared to eliminate hallucinations.
 
-### 🌐 4. Bilingual Study Modes (English & Hinglish)
-- Switch seamlessly between **🇬🇧 English** and **🇮🇳 Hinglish** with a single click.
-- Hinglish mode breaks down difficult academic concepts using natural conversational Hindi-English explanations while preserving technical terminology.
+### ✍️ 4. Executive Academic Synthesis
+- Delivers well-structured, professional English answers with Markdown headers, bullet points, and citation tags.
+- Strictly bounds every explanation to the source text without hallucinating facts.
 
-### ⚡ 5. Intelligent Quota & Rate Limit Handling
-- Proactively traps `429 RESOURCE_EXHAUSTED` and Gemini rate limits with friendly user feedback instead of generic server errors.
+### ⚡ 5. Intelligent Multi-Key Groq Pool & Rate Limit Failover
+- Supports multiple Groq API keys (`GROQ_API_KEY_1`, `GROQ_API_KEY_2`, etc.) with automatic round-robin rotation and instant failover on 429 rate limits.
 
 ### 🎨 6. Premium Glassmorphism UI
 - Fully responsive, dark-mode first design built with CSS variables, frosted glass effects, animated live stats, copy buttons, and auto-expanding input prompts.
@@ -53,17 +53,17 @@
 [ pypdf Extraction & Intelligent Chunking ]
        │
        ▼
-[ Gemini text-embedding-004 Vector Store ]
+[ Context Retrieval & Evidence Scoring ]
        │
-       ├──► [ Smart Document Briefing Generation ]
+       ├──► [ Smart Document Briefing Generation (Groq JSON) ]
        │
 [ User Query ]
        │
        ▼
-[ Semantic Vector Search & Evidence Scoring ]
+[ High-Precision Chunk Retrieval ]
        │
        ▼
-[ Gemini 2.5 Flash Grounded Synthesis ]
+[ Groq Ultra-Fast Grounded Synthesis ]
        │
        ▼
 [ Response with Click-to-Verify Citations ]
@@ -100,16 +100,17 @@ Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
-Edit `.env` and provide your Google Gemini API key:
+Edit `.env` and provide your Groq API key:
 ```env
 SECRET_KEY=your-django-secret-key
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
-GOOGLE_API_KEY=your-gemini-api-key-from-google-ai-studio
-GEMINI_CHAT_MODEL=gemini-2.5-flash
-GEMINI_EMBED_MODEL=text-embedding-004
+
+# Groq API Keys (https://console.groq.com/keys)
+GROQ_API_KEY=gsk_your-groq-api-key
+GROQ_CHAT_MODEL=openai/gpt-oss-120b
 ```
-> Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey).
+> Get a free API key at [Groq Console](https://console.groq.com/keys).
 
 ### 5. Run Migrations & Start Server
 ```bash
@@ -123,7 +124,7 @@ Visit `http://127.0.0.1:8000/chatbot/upload/` in your browser.
 
 ## 🧪 Running Automated Tests
 
-StudyRAG includes a test suite covering document loaders, chunking strategies, rate-limiting, briefing regeneration, and citation detail APIs:
+StudyRAG includes an automated test suite covering document loaders, chunking strategies, Groq multi-key failover, and citation detail APIs:
 
 ```bash
 pytest
@@ -144,9 +145,9 @@ studyrag/
 │   ├── answer_service.py   # Grounded response synthesis
 │   ├── briefing_service.py # Smart document summary generation
 │   ├── chunker.py          # Document chunking logic
-│   ├── gemini_service.py   # Google GenAI API client
+│   ├── groq_service.py     # Groq API client with multi-key pool
 │   ├── loader.py           # Multi-format document loader
-│   └── retriever.py        # Semantic vector similarity search
+│   └── retriever.py        # Keyword & passage relevance search
 ├── templates/         # UI templates
 │   ├── base.html
 │   └── chatbot/

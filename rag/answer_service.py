@@ -1,8 +1,12 @@
+import os
 from rag.retriever import retrieve_chunks_with_evidence
-from rag.gemini_service import generate_answer
+from rag.groq_service import generate_answer as generate_groq_answer, DEFAULT_GROQ_CHAT_MODEL
 
 
-def answer_document_question(document, question, language="english"):
+def answer_document_question(document, question, language="english", **kwargs):
+    """
+    Answers a question based on retrieved document chunks using Groq LLM inference.
+    """
     question = question.strip()
 
     if not question:
@@ -53,12 +57,14 @@ def answer_document_question(document, question, language="english"):
         })
 
     context = "\n\n".join(context_parts)
-    answer = generate_answer(
+    answer = generate_groq_answer(
         question,
         context,
         language=language,
         evidence_strength=evidence.get("strength", "Strong"),
     )
+    evidence["provider"] = "groq"
+    evidence["model"] = (os.getenv("GROQ_CHAT_MODEL") or "").strip() or DEFAULT_GROQ_CHAT_MODEL
 
     return {
         "answer": answer,

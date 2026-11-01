@@ -322,12 +322,7 @@
     font-size: 0.7rem;
     color: rgba(255,255,255,0.65);
 }
-.hinglish-pip {
-    background: rgba(255,255,255,0.2);
-    border-radius: 4px;
-    padding: 0.08rem 0.3rem;
-    font-size: 0.68rem;
-}
+
 
 /* AI Badge */
 .ai-avatar {
@@ -678,13 +673,71 @@
 /* Typing indicator */
 .typing-row { display: flex; gap: 0.75rem; align-items: flex-start; }
 .typing-bubble {
-    background: var(--bg-input);
-    border: 1px solid var(--bg-card-border);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 27, 75, 0.6) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.35);
     border-radius: 5px 20px 20px 20px;
-    padding: 0.85rem 1.25rem;
-    display: flex; align-items: center; gap: 0.85rem;
+    padding: 0.95rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.12);
+    backdrop-filter: blur(14px);
+    max-width: 86%;
+    position: relative;
+    overflow: hidden;
 }
-.typing-dots { display: inline-flex; align-items: center; gap: 5px; }
+.typing-bubble::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, #818cf8, #c084fc, transparent);
+    animation: typingScan 2.2s linear infinite;
+}
+@keyframes typingScan {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+.typing-status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 0.5rem;
+}
+.typing-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: rgba(99, 102, 241, 0.18);
+    border: 1px solid rgba(99, 102, 241, 0.38);
+    color: #c7d2fe;
+    padding: 0.18rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.typing-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 8px #34d399;
+    animation: livePulse 1.4s ease-in-out infinite;
+}
+.typing-step-counter {
+    color: var(--text-muted);
+    font-size: 0.71rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+.typing-content-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+.typing-dots { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; }
 .typing-dots span {
     width: 7px; height: 7px;
     background: #818cf8; border-radius: 50%;
@@ -697,7 +750,13 @@
     0%,80%,100% { transform: scale(0); opacity: 0.4; }
     40%          { transform: scale(1); opacity: 1; }
 }
-.typing-label { font-size: 0.84rem; color: #a5b4fc; font-weight: 500; }
+.typing-label {
+    font-size: 0.88rem;
+    color: #e0e7ff;
+    font-weight: 500;
+    line-height: 1.45;
+    transition: opacity 0.2s ease;
+}
 
 /* ── Input Box ── */
 .input-panel {
@@ -809,10 +868,9 @@
         </div>
 
         <div class="doc-bar-right">
-            <!-- Language Toggle -->
-            <div class="lang-switch">
-                <button type="button" class="lang-btn active" id="btn-en" onclick="setLang('english')">🇬🇧 EN</button>
-                <button type="button" class="lang-btn" id="btn-hi" onclick="setLang('hinglish')">🇮🇳 HI</button>
+            <!-- Groq Engine Badge -->
+            <div class="lang-switch" title="Groq Ultra-Fast Inference ({{ groq_model }})">
+                <span class="lang-btn active" style="cursor:default;background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.35);">⚡ Groq</span>
             </div>
 
             {% if chat_messages %}
@@ -942,7 +1000,6 @@
             <div class="user-bubble">
                 <div class="user-bubble-text">{{ msg.question }}</div>
                 <div class="user-bubble-footer">
-                    {% if msg.language == "hinglish" %}<span class="hinglish-pip">🇮🇳 Hinglish</span>{% endif %}
                     <span>{{ msg.created_at|date:"h:i A" }}</span>
                 </div>
             </div>
@@ -964,9 +1021,9 @@
                         {% endif %}
                         <span class="ev-desc">· {{ msg.evidence.description }}</span>
                     </div>
-                    {% if msg.language == "hinglish" %}
-                    <span style="font-size:0.71rem;background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);border-radius:9999px;padding:0.12rem 0.45rem;">🇮🇳 Hinglish</span>
-                    {% endif %}
+                    <div style="display:flex;align-items:center;gap:0.35rem;">
+                        <span style="font-size:0.71rem;background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.3);border-radius:9999px;padding:0.12rem 0.45rem;">⚡ Groq</span>
+                    </div>
                 </div>
                 {% endif %}
 
@@ -1014,8 +1071,17 @@
         <div class="typing-row" id="typing-row" style="display:none;">
             <div class="ai-avatar">AI</div>
             <div class="typing-bubble">
-                <div class="typing-dots"><span></span><span></span><span></span></div>
-                <span class="typing-label" id="typing-label">Searching document & synthesizing answer…</span>
+                <div class="typing-status-header">
+                    <span class="typing-badge" id="typing-mode-badge">
+                        <span class="typing-live-dot"></span>
+                        <span id="typing-mode-text">Grounded Synthesis</span>
+                    </span>
+                    <span class="typing-step-counter" id="typing-step-counter">Phase 1/3 · Retrieving Evidence</span>
+                </div>
+                <div class="typing-content-row">
+                    <div class="typing-dots"><span></span><span></span><span></span></div>
+                    <span class="typing-label" id="typing-label">Analyzing document context & synthesizing citation-grounded response…</span>
+                </div>
             </div>
         </div>
     </div>
@@ -1045,7 +1111,7 @@
             <span>Press <kbd style="background:var(--bg-input);border:1px solid var(--bg-input-border);border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;">Enter</kbd> to send · <kbd style="background:var(--bg-input);border:1px solid var(--bg-input-border);border-radius:4px;padding:0.1rem 0.35rem;font-size:0.72rem;">Shift+Enter</kbd> for newline</span>
             <span class="mode-badge" id="mode-badge">
                 <span style="width:5px;height:5px;background:#34d399;border-radius:50%;"></span>
-                <span id="mode-label">English Mode</span>
+                <span id="mode-label">Active Research Mode</span>
             </span>
         </div>
     </div>
@@ -1115,7 +1181,6 @@
 
 <script>
 // ── State ──────────────────────────────────────────────────
-let currentLang = localStorage.getItem('studyrag_lang') || 'english';
 const chatContainer = document.getElementById('chat-container');
 const chatForm      = document.getElementById('chat-form');
 const questionInput = document.getElementById('question-input');
@@ -1127,18 +1192,45 @@ const inputPanel    = document.getElementById('input-panel');
 const welcome       = document.getElementById('chat-welcome');
 const csrfToken     = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-// ── Language Toggle ────────────────────────────────────────
-function setLang(lang) {
-    currentLang = lang;
-    localStorage.setItem('studyrag_lang', lang);
-    document.getElementById('btn-en').classList.toggle('active', lang === 'english');
-    document.getElementById('btn-hi').classList.toggle('active', lang === 'hinglish');
-    document.getElementById('mode-label').textContent = lang === 'hinglish' ? '🇮🇳 Hinglish Mode' : '🇬🇧 English Mode';
-    typingLabel.textContent = lang === 'hinglish'
-        ? 'Document se evidence nikal kar Hinglish me jawab bana raha hai…'
-        : 'Searching document & synthesizing answer…';
+// ── Multi-stage Status ────────────────────────────────────
+const STATUS_STAGES = [
+    { label: 'Scanning semantic vector space & extracting cited passages…', step: 'Phase 1/3 · Retrieving Evidence' },
+    { label: 'Synthesizing evidence-grounded answer with verified citations…', step: 'Phase 2/3 · Grounded Synthesis' },
+    { label: 'Finalizing citation references and formatting response…', step: 'Phase 3/3 · Finalizing Citations' }
+];
+
+let statusInterval = null;
+
+function startTypingProgress() {
+    stopTypingProgress();
+    let idx = 0;
+
+    function renderStage(i) {
+        const item = STATUS_STAGES[i % STATUS_STAGES.length];
+        if (typingLabel) {
+            typingLabel.style.opacity = '0.35';
+            setTimeout(() => {
+                typingLabel.textContent = item.label;
+                const stepCounter = document.getElementById('typing-step-counter');
+                if (stepCounter) stepCounter.textContent = item.step;
+                typingLabel.style.opacity = '1';
+            }, 180);
+        }
+    }
+
+    renderStage(0);
+    statusInterval = setInterval(() => {
+        idx++;
+        renderStage(idx);
+    }, 2400);
 }
-setLang(currentLang);
+
+function stopTypingProgress() {
+    if (statusInterval) {
+        clearInterval(statusInterval);
+        statusInterval = null;
+    }
+}
 
 // ── Briefing Toggle ────────────────────────────────────────
 // Start open by default if messages are empty
@@ -1221,7 +1313,6 @@ chatForm.addEventListener('submit', async function (e) {
         <div class="user-bubble">
             <div class="user-bubble-text">${escHtml(question)}</div>
             <div class="user-bubble-footer">
-                ${currentLang === 'hinglish' ? '<span class="hinglish-pip">🇮🇳 Hinglish</span>' : ''}
                 <span>${timeNow}</span>
             </div>
         </div>`;
@@ -1232,6 +1323,7 @@ chatForm.addEventListener('submit', async function (e) {
     btnSend.disabled = true;
 
     typingRow.style.display = 'flex';
+    startTypingProgress();
     scrollBottom();
 
     try {
@@ -1242,10 +1334,11 @@ chatForm.addEventListener('submit', async function (e) {
                 'X-CSRFToken': csrfToken,
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: JSON.stringify({ question, language: currentLang }),
+            body: JSON.stringify({ question }),
         });
 
         const data = await res.json();
+        stopTypingProgress();
         typingRow.style.display = 'none';
 
         if (data.success) {
@@ -1254,9 +1347,11 @@ chatForm.addEventListener('submit', async function (e) {
             appendError(data.error || 'Could not generate answer.');
         }
     } catch {
+        stopTypingProgress();
         typingRow.style.display = 'none';
         appendError('Network error. Please check your connection and try again.');
     } finally {
+        stopTypingProgress();
         btnSend.disabled = false;
         questionInput.focus();
         scrollBottom();
@@ -1269,9 +1364,6 @@ function appendAI(answer, sources, evidence, lang, time) {
     if (evidence && evidence.strength) {
         const cls = evidence.strength === 'Strong' ? 'ev-strong' : evidence.strength === 'Partial' ? 'ev-partial' : 'ev-insuff';
         const dotCls = evidence.strength === 'Strong' ? 'ev-dot-strong' : evidence.strength === 'Partial' ? 'ev-dot-partial' : 'ev-dot-insuff';
-        const langBadge = lang === 'hinglish'
-            ? `<span style="font-size:0.71rem;background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);border-radius:9999px;padding:0.12rem 0.45rem;">🇮🇳 Hinglish</span>`
-            : '';
         evHtml = `
             <div class="evidence-header">
                 <div style="display:flex;align-items:center;gap:0.5rem;">
@@ -1281,7 +1373,9 @@ function appendAI(answer, sources, evidence, lang, time) {
                     </span>
                     <span class="ev-desc">· ${escHtml(evidence.description || '')}</span>
                 </div>
-                ${langBadge}
+                <div style="display:flex;align-items:center;gap:0.35rem;">
+                    <span style="font-size:0.71rem;background:rgba(249,115,22,0.12);color:#fb923c;border:1px solid rgba(249,115,22,0.3);border-radius:9999px;padding:0.12rem 0.45rem;">⚡ Groq</span>
+                </div>
             </div>`;
     }
 

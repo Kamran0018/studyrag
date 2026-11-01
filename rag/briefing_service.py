@@ -1,11 +1,11 @@
 import json
 import os
-from rag.gemini_service import generate_gemini_content
+from rag.groq_service import generate_groq_content, DEFAULT_GROQ_CHAT_MODEL
 
 
-def generate_document_briefing(document):
+def generate_document_briefing(document, **kwargs):
     """
-    Generates an executive briefing for a document including:
+    Generates an executive briefing for a document using Groq JSON mode:
     - 4-5 line executive summary
     - 4-6 key concepts
     - Key definitions
@@ -17,11 +17,9 @@ def generate_document_briefing(document):
 
     context = "\n\n".join([f"[{c.chunk_index}] {c.text}" for c in chunks])
 
-    model_name = (os.getenv("GEMINI_CHAT_MODEL") or "").strip() or "gemini-2.5-flash"
-
     prompt = f"""
-You are StudyRAG, an elite academic and professional document intelligence engine.
-Analyze this document and generate a structured executive briefing.
+You are StudyRAG, an elite academic and professional document intelligence engine powered by Groq.
+Analyze this document and generate a structured executive briefing strictly in English. All summaries, concepts, definitions, and questions must be 100% in professional English.
 
 Return ONLY a valid JSON object matching this exact schema:
 {{
@@ -43,18 +41,17 @@ DOCUMENT CONTEXT:
 {context}
 """
 
+    model_name = (os.getenv("GROQ_CHAT_MODEL") or "").strip() or DEFAULT_GROQ_CHAT_MODEL
     try:
-        response = generate_gemini_content(
+        response = generate_groq_content(
             model=model_name,
             contents=prompt,
-            config={
-                "response_mime_type": "application/json"
-            }
+            json_mode=True,
         )
         data = json.loads(response.text)
         return data
     except Exception as e:
-        print("Failed to generate briefing:", repr(e))
+        print("Failed to generate Groq briefing:", repr(e))
         return {
             "summary": f"Document indexed with {document.chunks.count()} knowledge chunks. Ready for citation-backed inquiry.",
             "key_concepts": ["Core Subject Matter", "Key Points", "Study Material"],

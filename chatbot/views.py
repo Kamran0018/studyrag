@@ -1,4 +1,5 @@
 import json
+import os
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -126,21 +127,15 @@ def document_chat(request, document_id):
             or request.content_type == "application/json"
         )
 
-        question = ""
         language = "english"
         if request.content_type == "application/json":
             try:
                 data = json.loads(request.body.decode("utf-8"))
                 question = data.get("question", "").strip()
-                language = data.get("language", "english").strip().lower()
             except Exception:
                 question = ""
         else:
             question = request.POST.get("question", "").strip()
-            language = request.POST.get("language", "english").strip().lower()
-
-        if language not in ("english", "hinglish"):
-            language = "english"
 
         if not question:
             if is_ajax:
@@ -178,17 +173,17 @@ def document_chat(request, document_id):
 
         except Exception as error:
             error_text = str(error)
-            print("StudyRAG answer error:", repr(error))
+            print("StudyRAG Groq error:", repr(error))
 
-            if "429" in error_text or "RESOURCE_EXHAUSTED" in error_text or "quota" in error_text.lower():
+            if "429" in error_text or "rate_limit" in error_text.lower() or "quota" in error_text.lower():
                 error_message = (
-                    "Gemini API quota exceeded. Please wait for the quota "
-                    "to reset or check your Google AI Studio limits."
+                    "Groq rate limit reached. Please wait a moment for tokens "
+                    "to reset or configure an additional Groq API key in .env."
                 )
                 status_code = 429
             else:
                 error_message = (
-                    "Answer generate nahi hua. Please check your API "
+                    "Failed to generate answer. Please check your Groq API "
                     "configuration and try again."
                 )
                 status_code = 500
@@ -208,6 +203,10 @@ def document_chat(request, document_id):
     briefing = document.briefing or {}
     sample_prompts = briefing.get("suggested_questions") or DEFAULT_SAMPLE_PROMPTS
 
+    from rag.groq_service import get_all_groq_api_keys, DEFAULT_GROQ_CHAT_MODEL
+    has_groq = bool(get_all_groq_api_keys())
+    groq_model = (os.getenv("GROQ_CHAT_MODEL") or "").strip() or DEFAULT_GROQ_CHAT_MODEL
+
     return render(
         request,
         "chatbot/chat.html",
@@ -216,6 +215,8 @@ def document_chat(request, document_id):
             "briefing": briefing,
             "chat_messages": chat_messages,
             "sample_prompts": sample_prompts,
+            "has_groq": has_groq,
+            "groq_model": groq_model,
         },
     )
 
